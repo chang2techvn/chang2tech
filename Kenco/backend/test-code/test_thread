@@ -1,0 +1,73 @@
+# import threading
+# from selenium import webdriver
+# from time import sleep
+
+# def runtest(i):
+#     Options = webdriver.ChromeOptions()
+#     Options.add_argument('--app=https://www.youtube.com/')
+#     driver = webdriver.Chrome(options=Options)
+#     x = i * 400
+#     y = 10
+#     driver.set_window_rect(x,y,400,600)
+#     sleep(10000)
+
+# number_thread = 20
+# threads = []
+# for i in range(number_thread):
+#     threads += [threading.Thread(target=runtest, args={i},)]
+# for t in threads:
+#     t.start()
+# for t in threads:
+#     t.join()
+# print("End threads")
+
+from selenium import webdriver
+from selenium.webdriver.chrome.options import Options
+from time import sleep
+import threading
+import ctypes
+
+# Function to get screen size
+def get_screen_size():
+    user32 = ctypes.windll.user32
+    user32.SetProcessDPIAware()
+    screen_width = user32.GetSystemMetrics(0)
+    screen_height = user32.GetSystemMetrics(1)
+    return screen_width, screen_height
+
+# Function to run test
+def runtest(i, window_width, window_height, windows_per_row):
+    options = Options()
+    options.add_argument('--app=https://www.tiktok.com/')
+    driver = webdriver.Chrome(options=options)
+    
+    row = i // windows_per_row
+    col = i % windows_per_row
+    x = col * window_width
+    y = row * window_height
+    driver.set_window_rect(x, y, window_width, window_height)
+    sleep(10100)  # Change to a smaller value for testing
+
+# Main code
+screen_width, screen_height = get_screen_size()
+number_thread = 45
+
+# Calculate the number of windows per row and per column
+# We assume that we want the windows to be as square as possible
+import math
+windows_per_row = math.ceil(math.sqrt(number_thread * (screen_width / screen_height)))
+windows_per_column = math.ceil(number_thread / windows_per_row)
+
+# Calculate the new window size so that all windows fit on the screen without gaps
+window_width = screen_width // windows_per_row
+window_height = screen_height // windows_per_column
+
+threads = []
+sleep(5)
+for i in range(number_thread):
+    threads.append(threading.Thread(target=runtest, args=(i, window_width, window_height, windows_per_row)))
+for t in threads:
+    t.start()
+for t in threads:
+    t.join()
+print("End threads")
